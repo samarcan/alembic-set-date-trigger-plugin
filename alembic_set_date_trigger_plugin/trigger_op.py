@@ -2,7 +2,6 @@ from alembic.autogenerate import comparators, renderers
 from alembic.operations import MigrateOperation, Operations
 
 from alembic_set_date_trigger_plugin.function_op import FUNCTION_NAME, CreateSetDateFunctionOp
-from alembic_set_date_trigger_plugin.sqlalchemy_types import DateTimeWithSetDateTrigger
 
 
 @Operations.register_operation("create_set_date_trigger")
@@ -124,7 +123,7 @@ def _get_sqlalchemy_models_set_date_triggers(autogen_context):
         target_columns = [
             (column_name, columns[column_name])
             for column_name in columns.keys()
-            if isinstance(columns[column_name].type, DateTimeWithSetDateTrigger)
+            if type(columns[column_name].type).__name__ == "DateTimeWithSetDateTriggerClass"
         ]
         for column_name, column in target_columns:
             trigger_on = column.type.trigger_on

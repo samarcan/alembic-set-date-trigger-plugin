@@ -18,7 +18,7 @@
 
 `Alembic set date trigger plugin` is a plugin for Alembic that adds support for automatic update DateTime fields with
 PostgreSQL triggers and functions, allowing to keep track of the triggers and function creation through alembic
-migrations and autodetecting them from your SQLAlchemy tables definition.
+migrations and auto-detecting them from your SQLAlchemy tables definition.
 
 ## Installation
 
@@ -36,9 +36,12 @@ Import the plugin into your alembic `env.py` file:
 import alembic_set_date_trigger_plugin
 ```
 
-This library implement a new type of column for SQLAlchemy based in the SQLAlchemy `Datetime` type. The funcionality is
+This library implement a new type of column for SQLAlchemy based in the SQLAlchemy `Datetime` type. The functionality is
 the same, but it adds a `trigger_on` fields to indicate when the trigger should be activated, there are two options:
 `update` and `create`.
+
+Additionally the base class from which DateTimeWithSetDateTrigger will inherit can be defined through the
+`datetime_processor` parameter, the default value is the SqlAlchemy Datetime type.
 
 In your SQLAlchemy tables definition you can add the new type `DateTimeWithSetDateTrigger`.
 
@@ -48,7 +51,11 @@ from alembic_set_date_trigger_plugin.sqlalchemy_types import DateTimeWithSetDate
 my_table = Table(
     "my_table",
 ...
+    #  Without defining datetime_processor
     Column("updated_at", DateTimeWithSetDateTrigger(trigger_on=TriggerOnEnum.update)),
+    
+    #  Defining datetime_processor
+    Column("updated_at", DateTimeWithSetDateTrigger(trigger_on=TriggerOnEnum.update, datetime_processor=ArrowType)),
 ...
 )
 ```
