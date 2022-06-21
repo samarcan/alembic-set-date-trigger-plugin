@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="alembic_set_date_trigger_plugin",
-    version="0.0.2",
+    version="0.0.3",
     author="Samuel Martín Cantalejo",
     description="",
     license="MIT",

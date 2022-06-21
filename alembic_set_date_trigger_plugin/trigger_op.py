@@ -1,7 +1,11 @@
 from alembic.autogenerate import comparators, renderers
 from alembic.operations import MigrateOperation, Operations
 
-from alembic_set_date_trigger_plugin.function_op import FUNCTION_NAME, CreateSetDateFunctionOp
+from alembic_set_date_trigger_plugin.function_op import (
+    FUNCTION_NAME,
+    CreateSetDateFunctionOp,
+    date_function_exists_in_db,
+)
 
 
 @Operations.register_operation("create_set_date_trigger")
@@ -70,8 +74,13 @@ def compare_set_date_triggers(autogen_context, upgrade_ops, schemas):
     sqlalchemy_set_date_triggers = _get_sqlalchemy_models_set_date_triggers(autogen_context)
 
     creation_ops = sqlalchemy_set_date_triggers.difference(db_set_date_triggers)
-    if creation_ops and not _date_function_exists_in_db(autogen_context, schemas):
-        upgrade_ops.ops.append(CreateSetDateFunctionOp())
+    if creation_ops and not date_function_exists_in_db(autogen_context, schemas):
+        from alembic_set_date_trigger_plugin.function_op import (
+            SET_DATE_FUNCTION,
+        )  # pylint: disable=import-outside-toplevel
+
+        upgrade_ops.ops.append(CreateSetDateFunctionOp(new_function=SET_DATE_FUNCTION))
+
     for table_name, column_name, trigger_on, trigger_name in creation_ops:
         upgrade_ops.ops.append(CreateSetDateTriggerOp(table_name, column_name, trigger_on, trigger_name))
 
@@ -99,20 +108,6 @@ def _get_db_set_date_triggers(autogen_context, schemas):
                 trigger_on = trigger_name.replace("__set_date_trigger", "").split("__")[2].replace("on_", "")
                 db_set_date_triggers.add((table_name, column_name, trigger_on, trigger_name))
     return db_set_date_triggers
-
-
-def _date_function_exists_in_db(autogen_context, schemas):
-    for sch in schemas:
-        sch = autogen_context.dialect.default_schema_name if sch is None else sch
-        rows = list(
-            autogen_context.connection.execute(
-                f"select count(*) from pg_proc p where proname = '{FUNCTION_NAME}';",
-                nspname=sch,
-            )
-        )
-        if rows[0][0] != 0:
-            return True
-    return False
 
 
 def _get_sqlalchemy_models_set_date_triggers(autogen_context):

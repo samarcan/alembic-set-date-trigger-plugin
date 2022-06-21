@@ -33,7 +33,7 @@ Import the plugin into your alembic `env.py` file:
 ```python
 #  env.py
 
-import alembic_set_date_trigger_plugin
+import alembic_set_date_trigger_plugin as asdtp
 ```
 
 This library implement a new type of column for SQLAlchemy based in the SQLAlchemy `Datetime` type. The functionality is
@@ -58,6 +58,33 @@ my_table = Table(
     Column("updated_at", DateTimeWithSetDateTrigger(trigger_on=TriggerOnEnum.update, datetime_processor=ArrowType)),
 ...
 )
+```
+
+You can also change the default PostgreSQL function for setting the current datetime. Take into account that the name 
+of the column that need to be updated is passed to the function and can be obtained with `TG_ARGV[0]`
+
+```postgresql
+-- Default function
+
+CREATE OR REPLACE FUNCTION asdtp_set_date()
+RETURNS TRIGGER AS $$
+   BEGIN
+     NEW := json_populate_record(NEW, json_build_object(TG_ARGV[0], now()));
+     RETURN NEW;
+ END;
+$$ LANGUAGE plpgsql;
+```
+
+```python
+#  env.py
+
+import alembic_set_date_trigger_plugin as asdtp
+
+asdtp.modify_set_date_function("""
+BEGIN
+    <CUSTOM LOGIC>
+END;
+""")
 ```
 
 When you run the alembic autogenerate migration command it will detect the changes and will generate a migration file
