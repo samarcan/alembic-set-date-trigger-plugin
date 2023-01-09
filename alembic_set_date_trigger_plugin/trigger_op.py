@@ -121,7 +121,9 @@ def _get_sqlalchemy_models_set_date_triggers(autogen_context):
             if type(columns[column_name].type).__name__ == "DateTimeWithSetDateTriggerClass"
         ]
         for column_name, column in target_columns:
-            trigger_on_list = (column.type.trigger_on,) if isinstance(trigger_on, str) else column.type.trigger_on
+            trigger_on_list = (
+                (column.type.trigger_on,) if isinstance(column.type.trigger_on, str) else column.type.trigger_on
+            )
             for trigger_on in trigger_on_list:
                 sqlalchemy_set_date_triggers.add(
                     (

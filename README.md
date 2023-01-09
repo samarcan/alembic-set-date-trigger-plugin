@@ -53,6 +53,8 @@ my_table = Table(
 ...
     #  Without defining datetime_processor
     Column("updated_at", DateTimeWithSetDateTrigger(trigger_on=TriggerOnEnum.update)),
+    Column("created_at", DateTimeWithSetDateTrigger(trigger_on=TriggerOnEnum.insert)),
+    Column("created_at", DateTimeWithSetDateTrigger(trigger_on=(TriggerOnEnum.insert, TriggerOnEnum.update))),
     
     #  Defining datetime_processor
     Column("updated_at", DateTimeWithSetDateTrigger(trigger_on=TriggerOnEnum.update, datetime_processor=ArrowType)),
