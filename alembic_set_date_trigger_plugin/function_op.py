@@ -23,7 +23,14 @@ class CreateSetDateFunctionOp(MigrateOperation):
         self.old_function = old_function
 
     @classmethod
-    def create_set_date_function(cls, operations, new_function=None, already_exists=False, old_function=None, **kw):
+    def create_set_date_function(
+        cls,
+        operations,
+        new_function=None,
+        already_exists=False,
+        old_function=None,
+        **kw,
+    ):
         op = CreateSetDateFunctionOp(already_exists, new_function, old_function, **kw)
         return operations.invoke(op)
 
